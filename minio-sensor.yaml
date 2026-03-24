@@ -34,6 +34,6 @@ spec:
                       template: trainer
                 - name: trainer
                   container:
-                    image: mlops-api:v3
+                    image: alaisonbenny/mlops-api:v1
                     imagePullPolicy: IfNotPresent
                     command: ["python", "train.py"]  # <--- ഈ വരി ഇവിടെ ചേർത്തു
