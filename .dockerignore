@@ -1,0 +1,23 @@
+# Python temporary files
+__pycache__/
+*.py[cod]
+*.class
+
+# Environment files
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Git files
+.git/
+.gitignore
+
+# MLflow files (നമ്മൾ ലോക്കലിൽ റൺ ചെയ്തിട്ടുണ്ടെങ്കിൽ)
+mlruns/
+mlflow.db
+
+# Docker files
+Dockerfile
+.dockerignore

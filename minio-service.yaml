@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-service
+  namespace: default
+spec:
+  selector:
+    app: minio   # ✅ MinIO pod label match ചെയ്യണം
+  type: NodePort # ✅ External access
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
+      nodePort: 30090  # ✅ Publicly accessible port
+

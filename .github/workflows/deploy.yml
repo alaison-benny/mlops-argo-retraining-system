@@ -1,0 +1,49 @@
+name: MLOps CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main  # മെയിൻ ബ്രാഞ്ചിൽ പുഷ് ചെയ്യുമ്പോൾ ഇത് പ്രവർത്തിക്കും
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          # ഓരോ തവണയും പുതിയ ടാഗ് വരാൻ GitHub Run Number ഉപയോഗിക്കുന്നു
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/mlops-api:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/mlops-api:v${{ github.run_number }}
+
+  update-manifest:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Update Image Version in Sensor YAML
+        run: |
+          # സെൻസർ ഫയലിലെ ഇമേജ് വേർഷൻ ഓട്ടോമാറ്റിക് ആയി അപ്ഡേറ്റ് ചെയ്യുന്നു
+          sed -i "s|image: .*|image: ${{ secrets.DOCKERHUB_USERNAME }}/mlops-api:v${{ github.run_number }}|g" minio-sensor.yaml
+          
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git add minio-sensor.yaml
+          git commit -m "Bump image version to v${{ github.run_number }} [skip ci]"
+          git push

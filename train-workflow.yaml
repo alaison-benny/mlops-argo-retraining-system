@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: ml-training-pipeline-
+  namespace: argo
+spec:
+  entrypoint: ml-pipeline
+  templates:
+  - name: ml-pipeline
+    dag:
+      tasks:
+      - name: train-model
+        template: trainer
+
+  - name: trainer
+    container:
+      image: mlops-api:v3
+      command: ["python3"]
+      args: ["train.py"]
+      env:
+      - name: MLFLOW_TRACKING_URI
+        value: "http://10.100.15.16:5000"
+      - name: MLFLOW_HTTP_HEADER_HOST
+        value: "10.100.15.16"

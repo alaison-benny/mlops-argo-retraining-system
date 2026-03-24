@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: minio-sensor
+  namespace: argo-events
+spec:
+  template:
+    serviceAccountName: argo-events-sa
+  dependencies:
+    - name: minio-dep
+      eventSourceName: minio
+      eventName: example
+  triggers:
+    - template:
+        name: argo-workflow-trigger
+        k8s:
+          group: argoproj.io
+          version: v1alpha1
+          resource: workflows
+          operation: create
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: ml-training-auto-
+                namespace: argo
+              spec:
+                entrypoint: ml-pipeline
+                templates:
+                - name: ml-pipeline
+                  steps:
+                  - - name: train-model
+                      template: trainer
+                - name: trainer
+                  container:
+                    image: mlops-api:v3
+                    imagePullPolicy: IfNotPresent
+                    command: ["python", "train.py"]  # <--- ഈ വരി ഇവിടെ ചേർത്തു
